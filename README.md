@@ -80,33 +80,45 @@ More details, with the code before and after each fix, are in `reflection.md`.
 
 Describe your fixed game in numbered steps so a reader can follow along without watching a video:
 
-1. Open the app.
-2. Select a difficulty: **Easy** (1 to 20), **Normal** (1 to 100) or **Hard** (1 to 50). Each mode has its own number of attempts.
-3. The game automatically picks a secret number within the range of the selected difficulty.
-4. Enter a whole number in the **Enter your guess** field and click **Submit Guess**.
-5. If you enter letters, a decimal, or a number outside the range, the game shows an error message, and it does not cost you an attempt.
-6. If your guess is too high, the game tells you to go lower. If it is too low, it tells you to go higher.
-7. Keep guessing and following the feedback.
-8. If you guess the secret number, you win. If you run out of attempts, you lose.
-9. Click **New Game** to start a new game.
+**Step 1:** The player picks a difficulty (Normal mode: 1 to 100, 8 attempts).
 
-**Screenshots:**
+![Step 1](step1.png)
 
-**1. Choose a difficulty**
+**Step 2:** The player enters the number 45 and clicks the **Submit Guess** button.
 
-![Choose a difficulty](choose-difficulty.png)
+![Step 2](step2.png)
 
-**2. Enter a guess**
+**Step 3:** The game says "Go LOWER!" (Attempts left: 7).
 
-![Enter a guess](enter-a-guess.png)
+![Step 3](step3.png)
 
-**3. Get the feedback**
+**Step 4:** The player enters the number 20.
 
-![Get the feedback](get-feedback.png)
+![Step 4](step4.png)
 
-**4. Win the game**
+**Step 5:** The game says "Go LOWER!" again.
 
-![Winning game](winning-game.png)
+![Step 5](step5.png)
+
+**Step 6:** The player enters the number 5.
+
+![Step 6](step6.png)
+
+**Step 7:** The game says "Go HIGHER!".
+
+![Step 7](step7.png)
+
+**Step 8:** The player enters the number 6.
+
+![Step 8](step8.png)
+
+**Step 9:** The game says "Correct!" and "You won! The secret was 6. Final score: 45". The player won in 4 attempts.
+
+![Step 9](step9.png)
+
+**Step 10:** The player clicks the **New Game** button to start a new game.
+
+![Step 10](step10.png)
 
 ## 🧪 Test Results
 

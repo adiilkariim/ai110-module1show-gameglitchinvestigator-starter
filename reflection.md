@@ -290,11 +290,27 @@ When I organized my bug notes with Claude, it kept "the score goes negative" as 
   and what it showed you about your code.
 - Did AI help you design or understand any tests? How?
 
+### How did I decide whether a bug was really fixed?
+
+I ran the app and played the game to see if the bug still happened, and I also checked the code to make sure the fix made sense. On top of that, I copied the code and gave it to multiple AI models to see if there was something that I or Claude Code had missed.
+
+### A test I ran and what it showed me
+
+The first time I ran `pytest`, all 3 tests failed with errors like `assert ('Win', '🎉 Correct!') == 'Win'`. This showed me that `check_guess` returns two values (the outcome and a message), while the tests only expected the outcome. After updating the tests to read only the outcome, they passed. I also added 4 new tests for bugs I fixed, like checking that a guess that is too high says "Go LOWER!" and that a decimal like `50.5` shows "Please enter a whole number." All 7 tests passed. I also tested manually: I played a full game in Normal mode, guessing 45, 20, 5 and 6, and the hints pointed the right way until I won.
+
+### Did AI help me design or understand any tests?
+
+Yes. When the tests failed, Claude explained that they were failing because `check_guess` returns two values instead of one, which helped me understand the error message. Claude also wrote the 4 new tests that target the bugs I fixed, and I ran `pytest` myself to confirm they all passed.
+
 ---
 
 ## 4. What did you learn about Streamlit and state?
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+
+### How I would explain reruns and session state to a friend
+
+Every time you click on something, Streamlit runs the whole program again from the beginning, like the page is refreshing. Normal variables forget everything after each click, so you need to save important things like the secret number, the score, and the attempts in `st.session_state`, because it remembers them between clicks.
 
 ---
 
@@ -304,3 +320,15 @@ When I organized my bug notes with Claude, it kept "the score goes negative" as 
   - This could be a testing habit, a prompting strategy, or a way you used Git.
 - What is one thing you would do differently next time you work with AI on a coding task?
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+### A habit I want to reuse
+
+The habit I want to build is carefully reading and understanding everything, even the parts I find hard. Staying focused and reading every detail is exhausting, and sometimes I catch myself writing vague prompts like "make it better." When I do that, the AI starts doing things I didn't want, because my prompt wasn't clear. So I need to build the habit of reading and evaluating what the AI gives me instead of just skipping over it.
+
+### What I would do differently next time
+
+Next time, I would write clearer and more specific prompts instead of vague ones like "make it better." When my prompt wasn't clear, the AI did things I didn't ask for, like writing extra answers I wanted to write myself. Telling the AI exactly what I want, and what I don't want it to change, would save me time and keep me in control of my own work.
+
+### How this project changed the way I think about AI-generated code
+
+AI can often write and generate code better and faster than I can, but only when I'm specific and clear, and when I evaluate everything it gives me. This project showed me that the parts I skip and accept without reading can cause more problems in the code later.

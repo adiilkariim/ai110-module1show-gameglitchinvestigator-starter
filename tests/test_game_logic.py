@@ -36,3 +36,15 @@ def test_decimal_is_rejected():
     ok, guess, error = parse_guess("50.5")
     assert ok is False
     assert error == "Please enter a whole number."
+
+def test_empty_input_is_rejected():
+    # Edge case: clicking Submit Guess with an empty box should not count as a guess
+    ok, guess, error = parse_guess("")
+    assert ok is False
+    assert error == "Enter a guess."
+
+def test_symbols_are_rejected():
+    # Edge case: an input with only symbols is not a number, so it shows an error
+    ok, guess, error = parse_guess("@#$")
+    assert ok is False
+    assert error == "That is not a number."

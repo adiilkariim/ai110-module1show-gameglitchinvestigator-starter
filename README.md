@@ -128,11 +128,11 @@ Describe your fixed game in numbered steps so a reader can follow along without 
 platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\user4\Desktop\ai110-module1show-gameglitchinvestigator-starter
 plugins: anyio-4.15.1
-collected 7 items
+collected 9 items
 
-tests\test_game_logic.py .......                                                                                                                   [100%]
+tests\test_game_logic.py .........                                                                                                                 [100%]
 
-=================================================================== 7 passed in 0.02s ===================================================================
+=================================================================== 9 passed in 0.03s ===================================================================
 ```
 
 ## 🚀 Stretch Features

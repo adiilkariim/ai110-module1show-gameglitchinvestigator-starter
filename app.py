@@ -30,9 +30,9 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
-#problem to fix : attempts start at 1 instead of 0, so the game ends one attempt early
+#fixed : attempts now start at 0, so the player gets the full number of attempts for each difficulty
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -85,15 +85,14 @@ if st.session_state.status != "playing":
     st.stop()
 
 if submit:
-    #problem to fix : the attempt is counted before checking the input, so invalid input uses up an attempt
-    st.session_state.attempts += 1
-
     ok, guess_int, err = parse_guess(raw_guess)
 
     if not ok:
         st.session_state.history.append(raw_guess)
         st.error(err)
     else:
+        #fixed : the attempt is only counted after the input is valid, so invalid input no longer uses up an attempt
+        st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
         if st.session_state.attempts % 2 == 0:

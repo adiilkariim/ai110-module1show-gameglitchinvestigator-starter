@@ -56,6 +56,10 @@ The counter in `app.py` started at `1`. I changed it to `0`, so each difficulty 
 
 **Checked:** letters no longer cost an attempt, and each difficulty allows its full number of guesses.
 
+### Fixed Bug #3: Fixing the inverted hints
+
+In `check_guess` in `logic_utils.py`, the messages were swapped. I changed it so a guess that is too high now says "Go LOWER!" and a guess that is too low says "Go HIGHER!".
+
 ---
 
 ## 2. How did you use AI as a teammate?

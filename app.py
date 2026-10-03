@@ -43,12 +43,26 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+#fixed : changing the difficulty starts a new game with a secret inside the new range, so the secret can always be guessed
+if st.session_state.get("difficulty") != difficulty:
+    st.session_state.difficulty = difficulty
+    st.session_state.secret = random.randint(low, high)
+    st.session_state.attempts = 0
+    st.session_state.status = "playing"
+    st.session_state.history = []
+
 st.subheader("Make a guess")
 
-st.info(
-    f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
-)
+#fixed : the attempts box is a placeholder that is filled again after a guess, so "Attempts left" no longer updates one click late
+attempts_box = st.empty()
+
+def show_attempts_left():
+    attempts_box.info(
+        f"Guess a number between 1 and 100. "
+        f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    )
+
+show_attempts_left()
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -90,6 +104,10 @@ if submit:
     if not ok:
         st.session_state.history.append(raw_guess)
         st.error(err)
+    #fixed : numbers outside the difficulty range now show an error and do not count as an attempt
+    elif guess_int < low or guess_int > high:
+        st.session_state.history.append(guess_int)
+        st.error(f"Out of range. Please enter a number between {low} and {high}.")
     else:
         #fixed : the attempt is only counted after the input is valid, so invalid input no longer uses up an attempt
         st.session_state.attempts += 1
@@ -126,6 +144,8 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+show_attempts_left()
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")

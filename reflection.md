@@ -60,6 +60,105 @@ The counter in `app.py` started at `1`. I changed it to `0`, so each difficulty 
 
 In `check_guess` in `logic_utils.py`, the messages were swapped. I changed it so a guess that is too high now says "Go LOWER!" and a guess that is too low says "Go HIGHER!".
 
+### Fixed Bug #4: Out-of-range numbers were accepted
+
+**The bug:** numbers outside the difficulty's range (like `0`, `-43287543641542` or `352353`) were accepted as normal guesses and used up an attempt.
+
+**Before** (`app.py`): every number went straight to `check_guess`, with no range check.
+```python
+else:
+    st.session_state.attempts += 1
+    st.session_state.history.append(guess_int)
+    ...
+    outcome, message = check_guess(guess_int, secret)
+```
+
+**After** (`app.py`): the guess is checked against the range first. Out-of-range numbers show an error and do not cost an attempt.
+```python
+elif guess_int < low or guess_int > high:
+    st.session_state.history.append(guess_int)
+    st.error(f"Out of range. Please enter a number between {low} and {high}.")
+else:
+    st.session_state.attempts += 1
+    ...
+```
+
+### Fixed Bug #5: Decimals were cut down to whole numbers
+
+**The bug:** typing `50.5` was quietly turned into `50` and counted as a guess.
+
+**Before** (`logic_utils.py`, `parse_guess`):
+```python
+try:
+    if "." in raw:
+        value = int(float(raw))
+    else:
+        value = int(raw)
+except Exception:
+    return False, None, "That is not a number."
+```
+
+**After:** only whole numbers are accepted. Decimals get their own error message and do not cost an attempt.
+```python
+try:
+    value = int(raw)
+except Exception:
+    try:
+        float(raw)
+    except Exception:
+        return False, None, "That is not a number."
+    return False, None, "Please enter a whole number."
+```
+
+### Fixed Bug #6: The secret could be outside the difficulty's range
+
+**The bug:** the secret was picked only once, when the app opened in Normal mode (1 to 100). Switching to Hard (1 to 50) kept the old secret, so it could be a number like 81 that can't be guessed.
+
+**Before** (`app.py`):
+```python
+if "secret" not in st.session_state:
+    st.session_state.secret = random.randint(low, high)
+```
+
+**After:** changing the difficulty starts a new game with a secret inside the new range.
+```python
+if st.session_state.get("difficulty") != difficulty:
+    st.session_state.difficulty = difficulty
+    st.session_state.secret = random.randint(low, high)
+    st.session_state.attempts = 0
+    st.session_state.status = "playing"
+    st.session_state.history = []
+```
+
+### Fixed Bug #7: "Attempts left" updated one click late
+
+**The bug:** the "Attempts left" box was drawn before the guess was processed, so it always showed the number from before my last guess. This made it look like invalid input was costing an attempt.
+
+**Before** (`app.py`):
+```python
+st.info(
+    f"Guess a number between 1 and 100. "
+    f"Attempts left: {attempt_limit - st.session_state.attempts}"
+)
+```
+
+**After:** the box is a placeholder that gets filled again after the guess is processed, so it always shows the correct number.
+```python
+attempts_box = st.empty()
+
+def show_attempts_left():
+    attempts_box.info(
+        f"Guess a number between 1 and 100. "
+        f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    )
+
+show_attempts_left()
+...
+show_attempts_left()  # called again at the end, after the guess
+```
+
+**Checked:** in every mode, only whole numbers inside the range count as an attempt, the right error shows for everything else, and "Attempts left" updates right away.
+
 ---
 
 ## 2. How did you use AI as a teammate?

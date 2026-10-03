@@ -9,7 +9,7 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-#problem to fix : numbers outside the allowed range are accepted, there is no range check in this function
+#fixed : the range check for numbers outside the allowed range is done in app.py, where the difficulty range is known
 def parse_guess(raw: str):
     """
     Parse user input into an int guess.
@@ -22,13 +22,15 @@ def parse_guess(raw: str):
     if raw == "":
         return False, None, "Enter a guess."
 
+    #fixed : decimals like 50.5 are no longer cut down to 50, only whole numbers are accepted
     try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
+        value = int(raw)
     except Exception:
-        return False, None, "That is not a number."
+        try:
+            float(raw)
+        except Exception:
+            return False, None, "That is not a number."
+        return False, None, "Please enter a whole number."
 
     return True, value, None
 

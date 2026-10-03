@@ -9,7 +9,7 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-#fixed : the range check for numbers outside the allowed range is done in app.py, where the difficulty range is known
+#FIX: I found that huge and negative numbers were accepted; Claude added the range check in app.py instead of here, because app.py knows the difficulty range
 def parse_guess(raw: str):
     """
     Parse user input into an int guess.
@@ -22,7 +22,7 @@ def parse_guess(raw: str):
     if raw == "":
         return False, None, "Enter a guess."
 
-    #fixed : decimals like 50.5 are no longer cut down to 50, only whole numbers are accepted
+    #FIX: I asked for only whole numbers to count; Claude found decimals like 50.5 were cut down to 50 and added the "Please enter a whole number." error, checked by a pytest test
     try:
         value = int(raw)
     except Exception:
@@ -35,7 +35,7 @@ def parse_guess(raw: str):
     return True, value, None
 
 
-#fixed : the hints were inverted, now a guess that is too high says go lower and a guess that is too low says go higher
+#FIX: I found while playing that the hints were inverted; I pointed Claude to this function, it swapped the messages, and pytest tests confirm them
 def check_guess(guess, secret):
     """
     Compare guess to secret and return (outcome, message).

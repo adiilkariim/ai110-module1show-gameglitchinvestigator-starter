@@ -1,5 +1,6 @@
 import random
 import streamlit as st
+#FIX: I asked Claude to move the game logic out of app.py; it moved the 4 functions into logic_utils.py and updated this import, keeping only the UI here
 from logic_utils import get_range_for_difficulty, parse_guess, check_guess, update_score
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
@@ -30,7 +31,7 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
-#fixed : attempts now start at 0, so the player gets the full number of attempts for each difficulty
+#FIX: I noticed Normal mode only gave 7 attempts instead of 8; Claude found the counter started at 1, changed it to 0, and tested every difficulty
 if "attempts" not in st.session_state:
     st.session_state.attempts = 0
 
@@ -43,7 +44,7 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-#fixed : changing the difficulty starts a new game with a secret inside the new range, so the secret can always be guessed
+#FIX: I asked Claude to fix it after it found Hard mode could keep a secret like 81 that can't be guessed; now changing the difficulty starts a new game with a secret in range
 if st.session_state.get("difficulty") != difficulty:
     st.session_state.difficulty = difficulty
     st.session_state.secret = random.randint(low, high)
@@ -53,7 +54,7 @@ if st.session_state.get("difficulty") != difficulty:
 
 st.subheader("Make a guess")
 
-#fixed : the attempts box is a placeholder that is filled again after a guess, so "Attempts left" no longer updates one click late
+#FIX: I thought symbols were costing an attempt; Claude found "Attempts left" updated one click late and made this box refresh after each guess
 attempts_box = st.empty()
 
 def show_attempts_left():
@@ -84,10 +85,12 @@ with col2:
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
-#problem to fix : new game does not clear the history and does not reset the status, so the game stays stuck after a win
+#FIX: I found the game got stuck after a win; Claude found New Game never reset the status or history and always used 1-100, fixed all three, and tested it after a win and a loss
 if new_game:
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.secret = random.randint(low, high)
+    st.session_state.status = "playing"
+    st.session_state.history = []
     st.success("New game started.")
     st.rerun()
 
@@ -104,21 +107,17 @@ if submit:
     if not ok:
         st.session_state.history.append(raw_guess)
         st.error(err)
-    #fixed : numbers outside the difficulty range now show an error and do not count as an attempt
+    #FIX: I found huge and negative numbers were accepted and asked for an error that doesn't cost an attempt; Claude added this range check and tested it in every mode
     elif guess_int < low or guess_int > high:
         st.session_state.history.append(guess_int)
         st.error(f"Out of range. Please enter a number between {low} and {high}.")
     else:
-        #fixed : the attempt is only counted after the input is valid, so invalid input no longer uses up an attempt
+        #FIX: I found while playing that letters still used up an attempt; Claude moved attempts += 1 after the input check, and I tested it in the game
         st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
-
-        outcome, message = check_guess(guess_int, secret)
+        #FIX: I asked Claude to finish the hint fix after it found the secret was turned into text on even attempts; now the secret is always compared as a number
+        outcome, message = check_guess(guess_int, st.session_state.secret)
 
         if show_hint:
             st.warning(message)

@@ -67,13 +67,12 @@ The game stays stuck, and the only way to play again is to refresh the page.
 - **One attempt missing (bug 2):** the attempt counter now starts at `0` instead of `1`, so each mode gives its full number of attempts.
 - **Out-of-range numbers (bug 4):** guesses are now checked against the mode's range. Numbers outside it show "Out of range. Please enter a number between 1 and 100." (or the range of the selected mode) and don't cost an attempt.
 - **Invalid input (bug 5):** an attempt is now only counted after the input is confirmed to be a valid number.
+- **New Game (bugs 3 and 6):** the "New Game" button now resets the status to "playing", clears the history, and picks a secret inside the selected mode's range, so you can play again after a win or a loss.
 
 **Extra fixes I found along the way:**
 - Decimals like `50.5` are no longer cut down to `50`; they show "Please enter a whole number."
 - Changing the difficulty now starts a new game with a secret inside the new range.
 - The "Attempts left" number now updates right after each guess instead of one click late.
-
-**Not fixed yet:** bugs 3 and 6 (the "New Game" button doesn't clear the history or reset the game after a win).
 
 More details, with the code before and after each fix, are in `reflection.md`.
 
@@ -117,11 +116,11 @@ Describe your fixed game in numbered steps so a reader can follow along without 
 platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\user4\Desktop\ai110-module1show-gameglitchinvestigator-starter
 plugins: anyio-4.15.1
-collected 3 items
+collected 7 items
 
-tests\test_game_logic.py ...                                                                                                                       [100%]
+tests\test_game_logic.py .......                                                                                                                   [100%]
 
-=================================================================== 3 passed in 0.02s ===================================================================
+=================================================================== 7 passed in 0.02s ===================================================================
 ```
 
 ## 🚀 Stretch Features

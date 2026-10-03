@@ -46,21 +46,97 @@ Terminal output when I ran the game:
 
 When I typed letters ("kfadjgdfghf"), the game correctly showed "That is not a number." However, it still counted that as one of my attempts. Invalid input shouldn't cost an attempt.
 
-### Fixed Bug #1: Invalid input used up an attempt
+---
 
-I moved `attempts += 1` in `app.py` so it only runs after the input is confirmed valid.
+## 🛠️ Bugs I Fixed
 
-### Fixed Bug #2: One attempt was missing
+## Fixed Bug #1: Invalid input used up an attempt
 
-The counter in `app.py` started at `1`. I changed it to `0`, so each difficulty now gets its full attempts.
+**The bug:** typing letters like "kfadjgdfghf" showed "That is not a number." but still used up one of my attempts.
+
+**Before** (`app.py`): the attempt was counted as soon as "Submit Guess" was clicked, before the input was checked.
+```python
+if submit:
+    st.session_state.attempts += 1
+
+    ok, guess_int, err = parse_guess(raw_guess)
+
+    if not ok:
+        st.session_state.history.append(raw_guess)
+        st.error(err)
+    else:
+        st.session_state.history.append(guess_int)
+```
+
+**After:** `attempts += 1` only runs after `parse_guess` confirms the input is valid.
+```python
+if submit:
+    ok, guess_int, err = parse_guess(raw_guess)
+
+    if not ok:
+        st.session_state.history.append(raw_guess)
+        st.error(err)
+    else:
+        st.session_state.attempts += 1
+        st.session_state.history.append(guess_int)
+```
+
+## Fixed Bug #2: One attempt was missing
+
+**The bug:** Normal mode should allow 8 attempts but only allowed 7. Hard allowed 4 instead of 5, and Easy allowed 5 instead of 6.
+
+**Before** (`app.py`): the counter started at `1`, so one attempt was already "used" before the first guess.
+```python
+if "attempts" not in st.session_state:
+    st.session_state.attempts = 1
+```
+
+**After:** the counter starts at `0`, so each difficulty gets its full number of attempts.
+```python
+if "attempts" not in st.session_state:
+    st.session_state.attempts = 0
+```
 
 **Checked:** letters no longer cost an attempt, and each difficulty allows its full number of guesses.
 
-### Fixed Bug #3: Fixing the inverted hints
+## Fixed Bug #3: Fixing the inverted hints
 
-In `check_guess` in `logic_utils.py`, the messages were swapped. I changed it so a guess that is too high now says "Go LOWER!" and a guess that is too low says "Go HIGHER!".
+**The bug:** the hints pointed the wrong way. A guess that was too high said "Go HIGHER!", and a guess that was too low said "Go LOWER!".
 
-### Fixed Bug #4: Out-of-range numbers were accepted
+**Before** (`logic_utils.py`, `check_guess`):
+```python
+if guess > secret:
+    return "Too High", "📈 Go HIGHER!"
+else:
+    return "Too Low", "📉 Go LOWER!"
+```
+
+**After:** the messages are swapped, so the hint points toward the secret.
+```python
+if guess > secret:
+    return "Too High", "📉 Go LOWER!"
+else:
+    return "Too Low", "📈 Go HIGHER!"
+```
+
+**Second part of the bug:** even after swapping the messages, some hints were still wrong. On every even attempt, `app.py` turned the secret into text, so the guess and the secret were compared as text instead of numbers (for example, guess 100 vs secret 2 said "Go HIGHER!").
+
+**Before** (`app.py`):
+```python
+if st.session_state.attempts % 2 == 0:
+    secret = str(st.session_state.secret)
+else:
+    secret = st.session_state.secret
+
+outcome, message = check_guess(guess_int, secret)
+```
+
+**After:** the secret is always passed as a number, so the hints are correct on every attempt.
+```python
+outcome, message = check_guess(guess_int, st.session_state.secret)
+```
+
+## Fixed Bug #4: Out-of-range numbers were accepted
 
 **The bug:** numbers outside the difficulty's range (like `0`, `-43287543641542` or `352353`) were accepted as normal guesses and used up an attempt.
 
@@ -83,7 +159,7 @@ else:
     ...
 ```
 
-### Fixed Bug #5: Decimals were cut down to whole numbers
+## Fixed Bug #5: Decimals were cut down to whole numbers
 
 **The bug:** typing `50.5` was quietly turned into `50` and counted as a guess.
 
@@ -110,7 +186,7 @@ except Exception:
     return False, None, "Please enter a whole number."
 ```
 
-### Fixed Bug #6: The secret could be outside the difficulty's range
+## Fixed Bug #6: The secret could be outside the difficulty's range
 
 **The bug:** the secret was picked only once, when the app opened in Normal mode (1 to 100). Switching to Hard (1 to 50) kept the old secret, so it could be a number like 81 that can't be guessed.
 
@@ -130,7 +206,7 @@ if st.session_state.get("difficulty") != difficulty:
     st.session_state.history = []
 ```
 
-### Fixed Bug #7: "Attempts left" updated one click late
+## Fixed Bug #7: "Attempts left" updated one click late
 
 **The bug:** the "Attempts left" box was drawn before the guess was processed, so it always showed the number from before my last guess. This made it look like invalid input was costing an attempt.
 
@@ -159,6 +235,28 @@ show_attempts_left()  # called again at the end, after the guess
 
 **Checked:** in every mode, only whole numbers inside the range count as an attempt, the right error shows for everything else, and "Attempts left" updates right away.
 
+## Fixed Bug #8: The game couldn't be restarted with "New Game"
+
+**The bug:** after winning or losing, clicking "New Game" reset the attempts and changed the secret, but the old history stayed and typing a guess did nothing. The game stayed stuck until I refreshed the page. The new secret was also always picked from 1 to 100, so in Easy or Hard mode it could be a number I'm not allowed to enter.
+
+**Before** (`app.py`): the button never reset `status` or `history`, and ignored the difficulty's range.
+```python
+if new_game:
+    st.session_state.attempts = 0
+    st.session_state.secret = random.randint(1, 100)
+```
+
+**After:** the button resets everything a new game needs. Because `status` is back to `"playing"`, the app no longer stops before reading the next guess.
+```python
+if new_game:
+    st.session_state.attempts = 0
+    st.session_state.secret = random.randint(low, high)
+    st.session_state.status = "playing"
+    st.session_state.history = []
+```
+
+**Checked:** after a win and after a loss, "New Game" starts a fresh game with empty history and full attempts, and new guesses get hints again. The new secret is always inside the selected mode's range.
+
 ---
 
 ## 2. How did you use AI as a teammate?
@@ -181,7 +279,7 @@ I asked Claude to explain why the game could not be restarted after a win. After
 
 ### An AI suggestion I did not accept
 
-Claude listed "the score goes negative" as a bug. I rejected it, because losing points for wrong guesses makes sense in a guessing game, so a negative score is not a problem. I removed it from my bug list and kept the score logic as it is.
+When I organized my bug notes with Claude, it kept "the score goes negative" as a bug and asked what score I expected. I decided not to treat it as a bug, because losing points for wrong guesses makes sense in a guessing game. I verified this by checking `update_score`: a wrong guess subtracts 5 points, so a score of -5 after one wrong guess is expected.
 
 ---
 

@@ -74,12 +74,14 @@ if submit:
     ok, guess_int, err = parse_guess(raw_guess)
 
     if not ok:
-        st.session_state.history.append(raw_guess)
         st.error(err)
+    ...
     else:
         st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 ```
+
+Later, when I added the Guess History feature, invalid input also stopped being saved in the history, so the history only holds real guesses.
 
 ## Fixed Bug #2: One attempt was missing
 

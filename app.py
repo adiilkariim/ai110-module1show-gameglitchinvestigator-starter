@@ -1,11 +1,37 @@
 import random
 import streamlit as st
-#FIX: I asked Claude to move the game logic out of app.py; it moved the 4 functions into logic_utils.py and updated this import, keeping only the UI here
-from logic_utils import get_range_for_difficulty, parse_guess, check_guess, update_score
+# FIX: I asked Claude to move the game logic out of app.py; it moved the 4
+# functions into logic_utils.py and updated this import, keeping only the UI
+# here
+from logic_utils import (
+    get_range_for_difficulty,
+    parse_guess,
+    check_guess,
+    update_score,
+    get_temperature,
+)
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
-st.title("🎮 Game Glitch Investigator")
+# UI: the game controller emoji in the title plays a looping wiggle animation
+st.markdown(
+    """
+    <style>
+    @keyframes controller-wiggle {
+        0%, 100% { transform: rotate(0deg) translateY(0); }
+        25% { transform: rotate(-12deg) translateY(-4px); }
+        50% { transform: rotate(0deg) translateY(0); }
+        75% { transform: rotate(12deg) translateY(-4px); }
+    }
+    .game-icon {
+        display: inline-block;
+        animation: controller-wiggle 1.5s ease-in-out infinite;
+    }
+    </style>
+    <h1><span class="game-icon">🎮</span> Game Glitch Investigator</h1>
+    """,
+    unsafe_allow_html=True,
+)
 st.caption("An AI-generated guessing game. Something is off.")
 
 st.sidebar.header("Settings")
@@ -31,7 +57,8 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
-#FIX: I noticed Normal mode only gave 7 attempts instead of 8; Claude found the counter started at 1, changed it to 0, and tested every difficulty
+# FIX: I noticed Normal mode only gave 7 attempts instead of 8; Claude found
+# the counter started at 1, changed it to 0, and tested every difficulty
 if "attempts" not in st.session_state:
     st.session_state.attempts = 0
 
@@ -44,18 +71,28 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-#FIX: I asked Claude to fix it after it found Hard mode could keep a secret like 81 that can't be guessed; now changing the difficulty starts a new game with a secret in range
+# FEATURE: the hint of each guess is saved too, so the sidebar can show it
+# next to the guess
+if "hints" not in st.session_state:
+    st.session_state.hints = []
+
+# FIX: I asked Claude to fix it after it found Hard mode could keep a secret
+# like 81 that can't be guessed; now changing the difficulty starts a new game
+# with a secret in range
 if st.session_state.get("difficulty") != difficulty:
     st.session_state.difficulty = difficulty
     st.session_state.secret = random.randint(low, high)
     st.session_state.attempts = 0
     st.session_state.status = "playing"
     st.session_state.history = []
+    st.session_state.hints = []
 
 st.subheader("Make a guess")
 
-#FIX: I thought symbols were costing an attempt; Claude found "Attempts left" updated one click late and made this box refresh after each guess
+# FIX: I thought symbols were costing an attempt; Claude found "Attempts left"
+# updated one click late and made this box refresh after each guess
 attempts_box = st.empty()
+
 
 def show_attempts_left():
     attempts_box.info(
@@ -63,7 +100,33 @@ def show_attempts_left():
         f"Attempts left: {attempt_limit - st.session_state.attempts}"
     )
 
+
 show_attempts_left()
+
+# FEATURE: the sidebar shows the guesses of the current game, filled again
+# after each guess so it is always up to date
+history_box = st.sidebar.empty()
+
+
+def show_guess_history():
+    # the hint is only shown when "Show hint" is on, so the sidebar doesn't
+    # reveal hidden hints
+    hints_visible = st.session_state.get("show_hint", True)
+    with history_box.container():
+        st.markdown("### 📜 Guess History")
+        if st.session_state.history:
+            for number, guess in enumerate(st.session_state.history, start=1):
+                has_hint = number <= len(st.session_state.hints)
+                if hints_visible and has_hint:
+                    hint = st.session_state.hints[number - 1]
+                    st.write(f"{number}. {guess} → {hint}")
+                else:
+                    st.write(f"{number}. {guess}")
+        else:
+            st.caption("No guesses yet.")
+
+
+show_guess_history()
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -83,14 +146,17 @@ with col1:
 with col2:
     new_game = st.button("New Game 🔁")
 with col3:
-    show_hint = st.checkbox("Show hint", value=True)
+    show_hint = st.checkbox("Show hint", value=True, key="show_hint")
 
-#FIX: I found the game got stuck after a win; Claude found New Game never reset the status or history and always used 1-100, fixed all three, and tested it after a win and a loss
+# FIX: I found the game got stuck after a win; Claude found New Game never
+# reset the status or history and always used 1-100, fixed all three, and
+# tested it after a win and a loss
 if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(low, high)
     st.session_state.status = "playing"
     st.session_state.history = []
+    st.session_state.hints = []
     st.success("New game started.")
     st.rerun()
 
@@ -104,20 +170,37 @@ if st.session_state.status != "playing":
 if submit:
     ok, guess_int, err = parse_guess(raw_guess)
 
+    # FEATURE: invalid and out-of-range input is no longer saved in the
+    # history, so it only holds real guesses
     if not ok:
-        st.session_state.history.append(raw_guess)
         st.error(err)
-    #FIX: I found huge and negative numbers were accepted and asked for an error that doesn't cost an attempt; Claude added this range check and tested it in every mode
+    # FIX: I found huge and negative numbers were accepted and asked for an
+    # error that doesn't cost an attempt; Claude added this range check and
+    # tested it in every mode
     elif guess_int < low or guess_int > high:
-        st.session_state.history.append(guess_int)
-        st.error(f"Out of range. Please enter a number between {low} and {high}.")
+        st.error(
+            f"Out of range. Please enter a number between {low} and {high}."
+        )
     else:
-        #FIX: I found while playing that letters still used up an attempt; Claude moved attempts += 1 after the input check, and I tested it in the game
+        # FIX: I found while playing that letters still used up an attempt;
+        # Claude moved attempts += 1 after the input check, and I tested it
+        # in the game
         st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
-        #FIX: I asked Claude to finish the hint fix after it found the secret was turned into text on even attempts; now the secret is always compared as a number
+        # FIX: I asked Claude to finish the hint fix after it found the secret
+        # was turned into text on even attempts; now the secret is always
+        # compared as a number
         outcome, message = check_guess(guess_int, st.session_state.secret)
+
+        # UI: wrong guesses also show a Hot/Warm/Cold emoji next to the hint
+        if outcome != "Win":
+            temperature = get_temperature(
+                guess_int, st.session_state.secret, low, high
+            )
+            message = f"{message} {temperature}"
+
+        st.session_state.hints.append(message)
 
         if show_hint:
             st.warning(message)
@@ -145,6 +228,7 @@ if submit:
                 )
 
 show_attempts_left()
+show_guess_history()
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")

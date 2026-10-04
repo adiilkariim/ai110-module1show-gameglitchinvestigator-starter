@@ -137,4 +137,7 @@ tests\test_game_logic.py .........                                              
 
 ## 🚀 Stretch Features
 
-- [ ] [If you choose to complete Challenge 4, describe the Enhanced UI changes here — a screenshot is optional]
+- [x] **Enhanced Game UI**
+  - **Hot/Cold hints:** wrong guesses now show 🔥 Hot!, 🌡️ Warm, or 🧊 Cold next to the Go Higher/Go Lower hint, based on how close the guess is to the secret (Hot is within 10% of the difficulty's range, Warm within 25%). This is done by the new `get_temperature()` function in `logic_utils.py`, which is used in the Submit Guess code in `app.py`.
+  - **Animated title:** the 🎮 emoji in the title plays a looping wiggle animation, added with CSS in the title `st.markdown` block in `app.py`.
+- [x] **Guess History sidebar:** the sidebar shows every valid guess of the current game with its hint (for example, `45 → Go LOWER! Cold`). Hints are hidden when "Show hint" is off, and the list clears on New Game or when the difficulty changes. Built in `app.py` with the `show_guess_history()` function.

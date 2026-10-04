@@ -39,5 +39,6 @@ Thumbs.db
 # Editor and IDE settings
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo

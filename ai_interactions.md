@@ -25,6 +25,24 @@ I asked Claude to add a Guess History to the sidebar that shows only valid guess
 
 I tested it myself in the browser to make sure it only shows valid guesses. I decided that hints should be hidden in the sidebar when "Show hint" is off, and I chose to keep the History line in the Developer Debug Info panel.
 
+### Second example: moving the game logic into logic_utils.py
+
+**My prompt to move the game logic from app.py to logic_utils.py:**
+```
+I want to move the logic code from app.py to logic_utils.py, and I want to start with get_range_for_difficulty. Move it from app.py to logic_utils.py, but keep the UI code in the app.py file.
+```
+
+**What did the agent do?**
+
+- Moved `get_range_for_difficulty` into `logic_utils.py`, replacing the placeholder that raised an error.
+- Deleted the old copy from `app.py` and added the import `from logic_utils import get_range_for_difficulty`.
+- Checked that the function returned the same ranges as before and that `app.py` still worked.
+- Pointed out that Hard mode (1 to 50) is easier than Normal (1 to 100), which could be fixed later.
+
+**What did you have to verify or fix manually?**
+
+I checked that all the UI code stayed in `app.py` and only the logic was moved. After this first function worked, I asked the AI to move the other functions (`parse_guess`, `check_guess` and `update_score`) the same way. I decided to keep the Hard mode range as it was.
+
 ---
 
 ## Test Generation (SF7)

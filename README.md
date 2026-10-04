@@ -82,43 +82,43 @@ Describe your fixed game in numbered steps so a reader can follow along without 
 
 **Step 1:** The player picks a difficulty (Normal mode: 1 to 100, 8 attempts).
 
-![Step 1](step1.png)
+![Step 1](steps%20images/step1.png)
 
 **Step 2:** The player enters the number 45 and clicks the **Submit Guess** button.
 
-![Step 2](step2.png)
+![Step 2](steps%20images/step2.png)
 
 **Step 3:** The game says "Go LOWER!" (Attempts left: 7).
 
-![Step 3](step3.png)
+![Step 3](steps%20images/step3.png)
 
 **Step 4:** The player enters the number 20.
 
-![Step 4](step4.png)
+![Step 4](steps%20images/step4.png)
 
 **Step 5:** The game says "Go LOWER!" again.
 
-![Step 5](step5.png)
+![Step 5](steps%20images/step5.png)
 
 **Step 6:** The player enters the number 5.
 
-![Step 6](step6.png)
+![Step 6](steps%20images/step6.png)
 
 **Step 7:** The game says "Go HIGHER!".
 
-![Step 7](step7.png)
+![Step 7](steps%20images/step7.png)
 
 **Step 8:** The player enters the number 6.
 
-![Step 8](step8.png)
+![Step 8](steps%20images/step8.png)
 
 **Step 9:** The game says "Correct!" and "You won! The secret was 6. Final score: 45". The player won in 4 attempts.
 
-![Step 9](step9.png)
+![Step 9](steps%20images/step9.png)
 
 **Step 10:** The player clicks the **New Game** button to start a new game.
 
-![Step 10](step10.png)
+![Step 10](steps%20images/step10.png)
 
 ## 🧪 Test Results
 
